@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Context Protocol (MCP) Presentation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Lato:wght@400;700&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Lato', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #444;
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            perspective: 1200px;
+        }
+
+        .slide {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
+            background: #fdfdfd;
+            border-radius: 25px;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Align to top for natural scrolling */
+            align-items: center;
+            padding: 40px 50px;
+            text-align: center;
+            transition: transform 0.7s cubic-bezier(0.38, 0.01, 0.33, 1), opacity 0.7s ease-in-out;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            opacity: 0;
+            transform: translateX(100%) rotateY(-90deg);
+            overflow-y: auto; /* Add scroll for overflow */
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0) rotateY(0);
+        }
+
+        .slide.previous {
+            opacity: 0;
+            transform: translateX(-100%) rotateY(90deg);
+        }
+
+        .slide h1, .slide h2 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            color: #1E3A8A; /* Deep Blue */
+        }
+
+        .slide h1 { font-size: 3.8em; margin-bottom: 15px; }
+        .slide h2 { font-size: 2.8em; margin-bottom: 35px; }
+
+        .slide p, .slide li {
+            font-size: 1.3em;
+            line-height: 1.75;
+            max-width: 850px;
+            color: #555;
+        }
+        
+        .slide ul {
+            list-style-type: none;
+            padding: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .slide li {
+            margin-bottom: 25px;
+            display: flex;
+            align-items: flex-start; /* Align icon with the top of the text */
+            text-align: left;
+            max-width: 800px;
+        }
+
+        .slide li::before {
+            content: '\27A4'; /* Stylish arrow */
+            color: #2563EB; /* Bright Blue */
+            font-size: 1.5em;
+            line-height: 1.5;
+            margin-right: 20px;
+            margin-top: 5px; /* Fine-tune vertical alignment */
+        }
+
+        .slide-icon {
+            height: 100px;
+            width: 100px;
+            margin-bottom: 25px;
+            filter: invert(18%) sepia(58%) saturate(3456%) hue-rotate(211deg) brightness(91%) contrast(93%);
+        }
+
+        .nav-button {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 50%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .nav-button:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        #prev-btn { left: 30px; }
+        #next-btn { right: 30px; }
+        
+        .slide-counter {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 1em;
+            z-index: 1000;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* Styles for Slide 2 Input/Output Flow */
+        .flow-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        .flow-box {
+            background: #f4f7fc;
+            border: 1px solid #e0e8f4;
+            border-radius: 15px;
+            padding: 25px;
+            width: 45%;
+            text-align: left;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .flow-box h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.4em;
+            color: #1E3A8A;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .flow-box ul {
+            padding-left: 0;
+            list-style-type: none;
+        }
+        .flow-box li {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #333;
+            display: flex;
+            align-items: flex-start;
+        }
+        .flow-box li::before {
+            content: '🔹';
+            color: #2563EB;
+            margin-right: 10px;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        .flow-arrow {
+            font-size: 4em;
+            color: #764ba2;
+            font-weight: bold;
+        }
+
+        /* Styles for Slide 2 Vertical Flow */
+        .flow-container-vertical {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .flow-box-large {
+            background: #eef2ff;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            padding: 25px;
+            width: 80%;
+            text-align: center;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+        }
+        .flow-box-large h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.8em;
+            color: #1E3A8A;
+            margin: 0 0 10px 0;
+        }
+        .flow-box-large p {
+            font-size: 1.2em;
+            color: #333;
+            margin: 0;
+        }
+        .vertical-arrow {
+            font-size: 3em;
+            color: #764ba2;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .flow-box-small {
+            background: #f4f7fc;
+            border-radius: 15px;
+            padding: 15px 25px;
+            width: 60%;
+            text-align: center;
+        }
+        .flow-box-small h4 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.3em;
+            color: #1E3A8A;
+            margin: 0 0 5px 0;
+        }
+        .flow-box-small p {
+            font-size: 1.1em;
+            color: #555;
+            margin: 0;
+        }
+
+        /* Styles for Example Slide */
+        .example-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: stretch;
+            width: 100%;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .example-box {
+            background: #fff;
+            border: 2px solid;
+            border-radius: 15px;
+            padding: 20px;
+            width: 48%;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+        }
+        .example-box.bad {
+            border-color: #fca5a5; /* Red-ish */
+        }
+        .example-box.good {
+            border-color: #86efac; /* Green-ish */
+        }
+        .example-box h4 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.3em;
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid;
+        }
+        .example-box.bad h4 {
+            color: #b91c1c; /* Dark Red */
+            border-bottom-color: #fca5a5;
+        }
+        .example-box.good h4 {
+            color: #166534; /* Dark Green */
+            border-bottom-color: #86efac;
+        }
+        .example-box p {
+            font-size: 1.1em;
+            margin: 0;
+            flex-grow: 1;
+        }
+        .example-box code {
+            display: block;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .sql-example-box {
+            background: #f4f7fc;
+            border: 1px solid #e0e8f4;
+            border-radius: 15px;
+            padding: 25px;
+            width: 90%;
+            text-align: left;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-top: 20px;
+        }
+        .sql-example-box code {
+            display: block;
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 1.1em;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* Styles for Final Example Slide */
+        .process-container {
+            width: 100%;
+            margin-top: 15px;
+        }
+        .process-step {
+            background: #f4f7fc;
+            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            padding: 15px 20px;
+            text-align: left;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .process-step h4 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2em;
+            color: #1E3A8A;
+            margin: 0 0 10px 0;
+        }
+        .process-step p {
+            font-size: 1.1em;
+            margin: 0;
+        }
+        .process-step code {
+             display: inline-block;
+             background: #eef2ff;
+             color: #4338ca;
+             padding: 3px 8px;
+             border-radius: 5px;
+             font-family: monospace;
+             font-weight: bold;
+        }
+        .process-arrow {
+            font-size: 2em;
+            color: #764ba2;
+            text-align: center;
+            margin: -5px 0;
+        }
+
+        /* Styles for Dynamic World Slide */
+        .source-container {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            width: 100%;
+            gap: 25px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .source-box {
+            background: #f4f7fc;
+            border-radius: 15px;
+            padding: 20px;
+            width: 22%;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-top: 4px solid #667eea;
+        }
+        .source-box .slide-icon {
+            height: 60px;
+            width: 60px;
+            margin-bottom: 15px;
+        }
+        .source-box h4 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2em;
+            color: #1E3A8A;
+            margin: 0 0 10px 0;
+        }
+        .source-box p {
+            font-size: 1em;
+            margin: 0;
+            color: #555;
+        }
+
+        /* Styles for Side Navigation Menu */
+        #toc-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            font-size: 24px;
+            cursor: pointer;
+            border-radius: 50%;
+            z-index: 1001;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        #toc-btn:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+            transform: scale(1.1);
+        }
+        #menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        #menu-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        #toc-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 350px;
+            height: 100%;
+            background: #1f2937;
+            z-index: 2001;
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease-in-out;
+            box-shadow: 5px 0px 15px rgba(0,0,0,0.2);
+        }
+        #toc-menu.visible {
+            transform: translateX(0);
+        }
+        #toc-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            font-size: 2.5em;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            line-height: 1;
+        }
+        #toc-close-btn:hover {
+            color: white;
+        }
+        #toc-menu h3 {
+            font-family: 'Poppins', sans-serif;
+            color: white;
+            font-size: 1.8em;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #4b5563;
+            padding-bottom: 10px;
+        }
+        #toc-menu ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            text-align: left;
+        }
+        #toc-menu li {
+            font-family: 'Lato', sans-serif;
+            color: #d1d5db;
+            font-size: 1.2em;
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+        #toc-menu li:hover {
+            background: #374151;
+            color: white;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <img src="https://api.iconify.design/mdi/lan-connect.svg" alt="Protocol Icon" class="slide-icon">
+            <h1>Model Context Protocol (MCP)</h1>
+            <p style="font-size: 1.5em; color: #555;">The next-generation framework for infusing LLMs with dynamic, trustworthy, real-time data.</p>
+        </div>
+
+        <!-- Slide 2: The Power of Context -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/gas-station-outline.svg" alt="Fuel Icon" class="slide-icon">
+            <h2>Context is the Fuel</h2>
+            <div class="flow-container-vertical">
+                <div class="flow-box-large">
+                    <h3>CONTEXT: The Fuel</h3>
+                    <p>The high-quality, relevant information that powers the LLM's reasoning. It is the entire universe the model gets to see. Without the right fuel, the engine is useless.</p>
+                </div>
+                <div class="vertical-arrow">⬇</div>
+                <div class="flow-box-small">
+                    <h4>QUESTION: The Destination</h4>
+                    <p>The user's goal that gives the engine direction.</p>
+                </div>
+            </div>
+            <p style="margin-top: 30px; font-size: 1.3em; max-width: 900px; font-weight: bold; color: #1E3A8A;">The resulting answer is not magic. It is a direct function of the quality of the context. Better fuel means a better journey.</p>
+        </div>
+
+        <!-- Slide 3: A Concrete Example -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/compare-horizontal.svg" alt="Compare Icon" class="slide-icon">
+            <h2>The Power of Rich Context</h2>
+            <div class="example-container">
+                <div class="example-box bad">
+                    <h4>Poor Context (Low-Grade Fuel)</h4>
+                    <p><strong>Context:</strong> `{"employee_name": "Sarah Mills", "department": "Sales"}`
+                    <strong>Query:</strong> "How is Sarah Mills performing?"
+                    <strong>Answer:</strong> <code>"Sarah Mills is an employee in the Sales department."</code> (Useless. It only repeats the context.)</p>
+                </div>
+                <div class="example-box good">
+                    <h4>Rich Context (High-Grade Fuel)</h4>
+                    <p><strong>Context:</strong> `{"name": "Sarah Mills", "title": "Sr. Account Exec", "performance_summary": "Exceeds Expectations", "quota_attainment": "142%", "current_project": "Project Titan Expansion"}`
+                    <strong>Query:</strong> "How is Sarah Mills performing?"
+                    <strong>Answer:</strong> <code>"Sarah Mills is a top performer, exceeding expectations with a 142% quota attainment. She is currently assigned to the Project Titan Expansion."</code> (Insightful and actionable.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: The Same Power, Applied to Stocks -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/chart-line.svg" alt="Stock Icon" class="slide-icon">
+            <h2>The Same Power, Applied to Stocks</h2>
+            <div class="example-container">
+                <div class="example-box bad">
+                    <h4>Poor Context</h4>
+                    <p><strong>Context:</strong> `{"ticker": "TSLA"}`
+                    <strong>Query:</strong> "Should I invest in TSLA?"
+                    <strong>Answer:</strong> <code>"TSLA is a stock."</code> (Factually correct, but utterly useless for making a decision.)</p>
+                </div>
+                <div class="example-box good">
+                    <h4>Rich Context</h4>
+                    <p><strong>Context:</strong> `{"ticker": "TSLA", "price": 322.74, "52_week_high": 414.50, "news_sentiment": "Slightly Negative", "volume": "138M"}`
+                    <strong>Query:</strong> "Should I invest in TSLA?"
+                    <strong>Answer:</strong> <code>"TSLA is currently trading at $322.74, well below its 52-week high. While volume is high, recent news sentiment has been slightly negative..."</code> (A genuinely helpful, data-driven starting point.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: A Critical Use Case: FinCEN -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/bank-transfer.svg" alt="FinCEN Icon" class="slide-icon">
+            <h2>A Critical Use Case: FinCEN</h2>
+            <div class="example-container">
+                <div class="example-box bad">
+                    <h4>Poor Context</h4>
+                    <p><strong>Context:</strong> `{"person_of_interest": "Ivan Petrov"}`
+                    <strong>Query:</strong> "Is Ivan Petrov high-risk?"
+                    <strong>Answer:</strong> <code>"Ivan Petrov is a person of interest."</code> (Offers no insight or actionable intelligence.)</p>
+                </div>
+                <div class="example-box good">
+                    <h4>Rich Context</h4>
+                    <p><strong>Context:</strong> `{"name": "Ivan Petrov", "sar_filings": 3, "high_risk_transactions": 12, "known_associates_on_watchlist": 2}`
+                    <strong>Query:</strong> "Is Ivan Petrov high-risk?"
+                    <strong>Answer:</strong> <code>"Yes, Ivan Petrov is high-risk. He has 3 Suspicious Activity Reports, 12 high-risk transactions, and 2 known associates on the watchlist."</code> (Clear, decisive, and backed by data.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: A Scientific Use Case: NIAID -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/virus-outline.svg" alt="Virus Icon" class="slide-icon">
+            <h2>A Scientific Use Case: NIAID</h2>
+            <div class="example-container">
+                <div class="example-box bad">
+                    <h4>Poor Context</h4>
+                    <p><strong>Context:</strong> `{"virus_name": "Influenza A"}`
+                    <strong>Query:</strong> "What are the latest developments for Influenza A?"
+                    <strong>Answer:</strong> <code>"Influenza A is a virus."</code> (Correct, but useless for a researcher.)</p>
+                </div>
+                <div class="example-box good">
+                    <h4>Rich Context</h4>
+                    <p><strong>Context:</strong> `{"virus": "Influenza A", "subtype": "H3N2", "recent_publications": ["..."], "new_sequences_genbank": 34, "clinical_trials_active": 5}`
+                    <strong>Query:</strong> "What are the latest developments for Influenza A?"
+                    <strong>Answer:</strong> <code>"For Influenza A subtype H3N2, 34 new sequences have been added to GenBank, and there are 5 active clinical trials. Recent publications focus on..."</code> (A powerful, data-rich summary for a scientist.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 7: A Grant Management Use Case -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/cash-multiple.svg" alt="Grant Icon" class="slide-icon">
+            <h2>A Grant Management Use Case</h2>
+            <div class="example-container">
+                <div class="example-box bad">
+                    <h4>Poor Context</h4>
+                    <p><strong>Context:</strong> `{"grant_id": "R01AI123456"}`
+                    <strong>Query:</strong> "What is the status of grant R01AI123456?"
+                    <strong>Answer:</strong> <code>"R01AI123456 is a grant."</code> (Provides no useful information.)</p>
+                </div>
+                <div class="example-box good">
+                    <h4>Rich Context</h4>
+                    <p><strong>Context:</strong> `{"grant_id": "R01AI123456", "status": "Active", "principal_investigator": "Dr. Eleanor Vance", "funding_amount": "$2.5M", "end_date": "2026-08-31"}`
+                    <strong>Query:</strong> "What is the status of grant R01AI123456?"
+                    <strong>Answer:</strong> <code>"Grant R01AI123456 is Active, led by Dr. Eleanor Vance with $2.5M in funding, and is scheduled to end on August 31, 2026."</code> (A complete and actionable summary.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: A Defense Health Agency Use Case -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/hospital-building.svg" alt="DHA Icon" class="slide-icon">
+            <h2>A Defense Health Agency Use Case</h2>
+            <div class="example-container">
+                <div class="example-box bad">
+                    <h4>Poor Context</h4>
+                    <p><strong>Context:</strong> `{"service_member_id": "A123456789"}`
+                    <strong>Query:</strong> "Is this service member ready for deployment?"
+                    <strong>Answer:</strong> <code>"A123456789 is a service member."</code> (Dangerously unhelpful.)</p>
+                </div>
+                <div class="example-box good">
+                    <h4>Rich Context</h4>
+                    <p><strong>Context:</strong> `{"id": "A123456789", "medical_readiness": "Ready", "dental_readiness": "Pending", "last_physical": "2025-06-15", "vaccinations_current": true}`
+                    <strong>Query:</strong> "Is this service member ready for deployment?"
+                    <strong>Answer:</strong> <code>"This service member is NOT fully ready for deployment. Their medical readiness is Ready, but their dental readiness is Pending."</code> (A clear, actionable, and mission-critical answer.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: A DHA CIO Use Case -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/server-network.svg" alt="CIO Icon" class="slide-icon">
+            <h2>A DHA CIO Use Case</h2>
+            <div class="example-container">
+                <div class="example-box bad">
+                    <h4>Poor Context</h4>
+                    <p><strong>Context:</strong> `{"application_name": "Genesis"}`
+                    <strong>Query:</strong> "What is the status of the Genesis application?"
+                    <strong>Answer:</strong> <code>"Genesis is an application."</code> (Useless for an IT operator.)</p>
+                </div>
+                <div class="example-box good">
+                    <h4>Rich Context</h4>
+                    <p><strong>Context:</strong> `{"app_name": "Genesis", "status": "Degraded Performance", "active_alerts": 3, "on_call_engineer": "David Chen", "latency_ms": 1200}`
+                    <strong>Query:</strong> "What is the status of the Genesis application?"
+                    <strong>Answer:</strong> <code>"Genesis is experiencing Degraded Performance with 3 active alerts and a high latency of 1200ms. The on-call engineer is David Chen."</code> (A complete, actionable report for immediate response.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: A U.S. Navy Use Case -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/ship-wheel.svg" alt="Navy Icon" class="slide-icon">
+            <h2>A U.S. Navy Use Case</h2>
+            <div class="example-container">
+                <div class="example-box bad">
+                    <h4>Poor Context</h4>
+                    <p><strong>Context:</strong> `{"vessel_name": "USS Nimitz"}`
+                    <strong>Query:</strong> "Is the USS Nimitz ready for its mission?"
+                    <strong>Answer:</strong> <code>"The USS Nimitz is a naval vessel."</code> (Completely unhelpful for a commander.)</p>
+                </div>
+                <div class="example-box good">
+                    <h4>Rich Context</h4>
+                    <p><strong>Context:</strong> `{"vessel": "USS Nimitz", "status": "Ready", "fuel_level_percent": 85, "crew_readiness_percent": 98, "mission_capability": "Fully Capable"}`
+                    <strong>Query:</strong> "Is the USS Nimitz ready for its mission?"
+                    <strong>Answer:</strong> <code>"The USS Nimitz is Ready and Fully Mission Capable, with a fuel level of 85% and crew readiness at 98%."</code> (A clear, data-driven answer for command and control.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: A Medical Coding & Billing Use Case -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/file-document-edit-outline.svg" alt="Coding Icon" class="slide-icon">
+            <h2>A Medical Coding & Billing Use Case</h2>
+            <div class="example-container">
+                <div class="example-box bad">
+                    <h4>Poor Context</h4>
+                    <p><strong>Context:</strong> `{"procedure": "Knee surgery"}`
+                    <strong>Query:</strong> "What is the billing code for this knee surgery?"
+                    <strong>Answer:</strong> <code>"The code for knee surgery is 27447."</code> (Ambiguous and likely incorrect, leading to claim denials.)</p>
+                </div>
+                <div class="example-box good">
+                    <h4>Rich Context</h4>
+                    <p><strong>Context:</strong> `{"procedure": "Total knee arthroplasty", "complexity": "Revision of existing implant", "patient_age": 72, "comorbidities": ["Diabetes", "Hypertension"]}`
+                    <strong>Query:</strong> "What is the billing code for this knee surgery?"
+                    <strong>Answer:</strong> <code>"The correct code is 27487 (Revision of total knee arthroplasty, with or without allograft). Modifiers for complexity and comorbidities may apply."</code> (A precise, compliant, and financially sound answer.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: A Case Management Use Case -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/briefcase-check-outline.svg" alt="Case Management Icon" class="slide-icon">
+            <h2>A Case Management Use Case</h2>
+            <div class="example-container">
+                <div class="example-box bad">
+                    <h4>Poor Context</h4>
+                    <p><strong>Context:</strong> `{"case_id": "CM-98765"}`
+                    <strong>Query:</strong> "What is the status of case CM-98765?"
+                    <strong>Answer:</strong> <code>"CM-98765 is a case."</code> (Tells the user nothing of value.)</p>
+                </div>
+                <div class="example-box good">
+                    <h4>Rich Context</h4>
+                    <p><strong>Context:</strong> `{"case_id": "CM-98765", "status": "Pending Client Signature", "assigned_worker": "John Smith", "last_contact": "2025-07-22", "next_appointment": "2025-08-05"}`
+                    <strong>Query:</strong> "What is the status of case CM-98765?"
+                    <strong>Answer:</strong> <code>"Case CM-98765 is Pending Client Signature. The assigned worker is John Smith, and the next appointment is on August 5, 2025."</code> (A complete and actionable case summary.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: A Mission-Critical Use Case: E-EFMP -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/shield-account-outline.svg" alt="EFMP Icon" class="slide-icon">
+            <h2>A Mission-Critical Use Case: E-EFMP</h2>
+            <div class="example-container">
+                <div class="example-box bad">
+                    <h4>Poor Context</h4>
+                    <p><strong>Context:</strong> `{"family_member": "Miller Child", "potential_station": "Fort Greely"}`
+                    <strong>Query:</strong> "Can the Miller child's needs be met at Fort Greely?"
+                    <strong>Answer:</strong> <code>"Fort Greely has a medical facility."</code> (Vague, stressful, and unhelpful.)</p>
+                </div>
+                <div class="example-box good">
+                    <h4>Rich Context</h4>
+                    <p><strong>Context:</strong> `{"diagnosis": "Autism Spectrum Disorder - Level 2", "therapies": ["ABA - 20 hrs/wk", "Speech - 2 hrs/wk"], "specialists": ["Developmental Pediatrician"]}`
+                    <strong>Query:</strong> "Can the Miller child's needs be met at Fort Greely?"
+                    <strong>Answer:</strong> <code>"No, Fort Greely cannot support this child's needs. The nearest Developmental Pediatrician is a 4-hour drive, and there is a 12-month waiting list for ABA services. We recommend exploring assignments at Fort Carson or Joint Base Lewis-McChord, which have immediate availability for all required services."</code> (A clear, actionable, and life-changing answer.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 11: A CMS Use Case -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/domain.svg" alt="CMS Icon" class="slide-icon">
+            <h2>A CMS Use Case</h2>
+            <div class="example-container">
+                <div class="example-box bad">
+                    <h4>Poor Context</h4>
+                    <p><strong>Context:</strong> `{"citizen_id": "123-45-6789"}`
+                    <strong>Query:</strong> "Is this person eligible for the new program?"
+                    <strong>Answer:</strong> <code>"123-45-6789 is a citizen."</code> (Provides no eligibility information.)</p>
+                </div>
+                <div class="example-box good">
+                    <h4>Rich Context</h4>
+                    <p><strong>Context:</strong> `{"id": "123-45-6789", "age": 68, "income_level": "Low", "disability_status": "None", "existing_coverage": "Medicare Part A"}`
+                    <strong>Query:</strong> "Is this person eligible for the new program?"
+                    <strong>Answer:</strong> <code>"Yes, this person is eligible. They meet the age and income requirements and have existing Medicare Part A coverage."</code> (A definitive and compliant answer.)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: The Twin Challenges of Context -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/target-arrow.svg" alt="Challenges Icon" class="slide-icon">
+            <h2>The Twin Challenges of Context</h2>
+            <ul>
+                <li><strong>Accuracy & Relevancy:</strong> In a sea of information, finding the exact drop of data that matters is paramount. Providing irrelevant context confuses the LLM, leading to flawed reasoning and factually incorrect answers. The ultimate challenge is precision retrieval at scale.</li>
+                <li><strong>Latency:</strong> Modern users expect instantaneous results. The entire process of finding, retrieving, and delivering context to the LLM must happen in the blink of an eye. A slow response is a failed response.</li>
+            </ul>
+        </div>
+
+        <!-- Slide 4: The Standard Today: RAG -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/file-document-multiple-outline.svg" alt="RAG Icon" class="slide-icon">
+            <h2>The Standard Today: RAG</h2>
+            <p><strong>Retrieval-Augmented Generation (RAG)</strong> represents the first major leap in this area. It operates by transforming a library of <strong>static documents</strong> into a searchable knowledge base. When a user asks a question, RAG finds relevant text snippets to inform the LLM. While revolutionary, this approach is fundamentally limited as it can only reason over information that is frozen in time.</p>
+        </div>
+
+        <!-- Slide 5: The Leap to a Dynamic World -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/arrow-decision-auto-outline.svg" alt="Dynamic Data Icon" class="slide-icon">
+            <h2>The Leap to a Dynamic World</h2>
+            <p>The most valuable information isn't in static files; it's alive within your organization's systems. The challenge is that this data is fragmented, locked away in different formats and locations.</p>
+            <div class="source-container">
+                <div class="source-box">
+                    <img src="https://api.iconify.design/mdi/database-sync-outline.svg" alt="Database Icon" class="slide-icon">
+                    <h4>Live Databases</h4>
+                    <p>Real-time inventory, sales, and operational data.</p>
+                </div>
+                <div class="source-box">
+                    <img src="https://api.iconify.design/mdi/api.svg" alt="API Icon" class="slide-icon">
+                    <h4>External APIs</h4>
+                    <p>Market trends, weather forecasts, and partner data.</p>
+                </div>
+                <div class="source-box">
+                    <img src="https://api.iconify.design/mdi/email-open-outline.svg" alt="Email Icon" class="slide-icon">
+                    <h4>Communication</h4>
+                    <p>Insights from emails, calendars, and collaboration tools.</p>
+                </div>
+                <div class="source-box">
+                    <img src="https://api.iconify.design/mdi/monitor-screenshot.svg" alt="Legacy App Icon" class="slide-icon">
+                    <h4>Legacy Systems</h4>
+                    <p>Critical data from mainframes and older applications.</p>
+                </div>
+            </div>
+            <p style="margin-top: 25px; font-weight: bold; color: #1E3A8A;">How do you unify this chaos? You need a common language. You need a protocol.</p>
+        </div>
+
+        <!-- Slide 6: Introducing MCP -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/lan-connect.svg" alt="MCP Icon" class="slide-icon">
+            <h2>Introducing the Model Context Protocol</h2>
+            <p>MCP is the universal translator for LLM data. It establishes a standardized, open protocol that allows any data source to communicate its capabilities to the model. By creating a common language for discovery and access, MCP empowers the LLM to find and use the best possible context—whether from a database, an API, or a legacy tool—to deliver answers with unparalleled speed and accuracy.</p>
+        </div>
+
+        <!-- Slide 7: The Building Blocks of MCP -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/puzzle-outline.svg" alt="Building Blocks Icon" class="slide-icon">
+            <h2>The Building Blocks of MCP</h2>
+            <ul>
+                <li><strong>Resources:</strong> The foundational data layer. These are direct, unfiltered streams of information—a raw database table, a CSV file, or an API endpoint providing market data.</li>
+                <li><strong>Tools:</strong> Intelligent, function-like agents that process information. A tool might take a user ID to fetch an entire customer profile or translate a complex data structure into a simple, LLM-readable format.</li>
+                <li><strong>Prompts:</strong> The descriptive layer. Simple, clear, natural language descriptions that tell the LLM what each Resource and Tool is for, making the entire system discoverable and usable.</li>
+            </ul>
+        </div>
+
+        <!-- Slide 8: The Two Layers of MCP -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/layers-outline.svg" alt="Layers Icon" class="slide-icon">
+            <h2>The Two Layers of MCP</h2>
+            <ul>
+                <li><strong>Data Protocol (The "What"):</strong> This is the strategic, business-focused layer. It defines the available data and tools in terms that are relevant to the business domain, such as `getCustomerOrders` or `getCompetitorStockPrice`.</li>
+                <li><strong>Wire Protocol (The "How"):</strong> This is the underlying technical implementation. It defines how data is physically transmitted (e.g., via HTTPS, gRPC). This crucial separation allows the technology to evolve without ever disrupting the established business logic.</li>
+            </ul>
+        </div>
+
+        <!-- Slide 9: The Database Challenge: NL-to-SQL -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/database-search.svg" alt="Database Icon" class="slide-icon">
+            <h2>The Old Way: Natural Language to SQL</h2>
+            <p>The traditional approach to querying databases with LLMs is to provide the database schema and have the model generate SQL. While impressive, it's fraught with peril.</p>
+            <div class="sql-example-box">
+                <code><strong>User:</strong> "Show me the top 5 customers by sales in the last quarter."<br><strong>LLM generates:</strong><br>SELECT customer_name, SUM(sale_amount) AS total_sales<br>FROM sales s JOIN customers c ON s.cust_id = c.id<br>WHERE s.sale_date >= '2025-04-01'<br>GROUP BY customer_name<br>ORDER BY total_sales DESC<br>LIMIT 5;</code>
+            </div>
+        </div>
+
+        <!-- Slide 10: The Problem with Raw NL-to-SQL -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/alert-circle-outline.svg" alt="Warning Icon" class="slide-icon">
+            <h2>The High Margin for Error</h2>
+            <p>Generating complex SQL on the fly is risky. The LLM might misunderstand table relationships, misuse functions, or create inefficient queries, especially with complex joins. This leads to incorrect results or even database errors. There is a much better way...</p>
+        </div>
+
+        <!-- Slide 11: The MCP Solution: Data Products -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/package-variant-closed.svg" alt="Data Product Icon" class="slide-icon">
+            <h2>The Solution: Composable Data Products</h2>
+            <p>Instead of raw SQL generation, we pre-compose the query into a trusted **Data Product**. This human-validated query is then exposed via MCP, with only the necessary parameters available to the LLM.</p>
+            <ul>
+                <li><strong>Human-Vetted Accuracy:</strong> Experts write and verify the complex query once, eliminating the risk of LLM error in flight.</li>
+                <li><strong>LLM-Powered Flexibility:</strong> The LLM's role shifts from risky SQL author to intelligent parameter filler, dynamically providing values like date ranges or customer IDs.</li>
+            </ul>
+        </div>
+
+        <!-- Slide 12: Tying It All Together -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/sitemap-outline.svg" alt="Tying it together Icon" class="slide-icon">
+            <h2>MCP in Action: The Full Cycle</h2>
+            <div class="process-container">
+                <div class="process-step">
+                    <h4>1. A Trusted Tool is Defined</h4>
+                    <p>An expert creates a <code>Performance_Evaluator</code> tool. When asked about <strong>Sarah Mills</strong>, it provides the following rich context:</p>
+                    <code>{"name": "Sarah Mills", "performance": "Exceeds Expectations", "quota": "142%"}</code>
+                    <p><strong>Resulting Answer:</strong> "Sarah Mills is a top performer, exceeding expectations with a 142% quota attainment."</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>2. A New, Dynamic Question is Asked</h4>
+                    <p>A user now asks: "How is <strong>John Doe</strong> doing?" The LLM invokes the same <code>Performance_Evaluator</code> tool with the new name.</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>3. Dynamic Context Delivers a New Insight</h4>
+                    <p>The tool runs again, this time fetching <strong>John Doe's</strong> live data and producing a completely new context:
+                    <code>{"name": "John Doe", "performance": "Needs Improvement", "quota": "78%"}</code>
+                    <p><strong>Resulting Answer:</strong> "John Doe is currently underperforming, having met only 78% of his quota."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: The Same Power, Applied to Stocks -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/chart-line.svg" alt="Stock Icon" class="slide-icon">
+            <h2>MCP for Financial Data</h2>
+            <div class="process-container">
+                <div class="process-step">
+                    <h4>1. A `Stock_Evaluator` Tool is Defined</h4>
+                    <p>An expert creates a tool that takes a <code>ticker</code>, calls a live market API, and returns a rich data object. For <strong>TSLA</strong>, it returns:
+                    <code>{"ticker": "TSLA", "price": 322.74, "52_week_high": 414.50, "news_sentiment": "Slightly Negative"}</code></p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>2. A New Ticker is Queried</h4>
+                    <p>A user now asks: "What's the outlook for <strong>GOOGL</strong>?" The LLM invokes the same <code>Stock_Evaluator</code> tool with the new ticker.</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>3. Dynamic Context for a New Stock</h4>
+                    <p>The tool runs again, fetching <strong>GOOGL's</strong> live data and producing a new context:
+                    <code>{"ticker": "GOOGL", "price": 195.30, "52_week_high": 201.50, "news_sentiment": "Neutral"}</code>
+                    <p><strong>Resulting Answer:</strong> "GOOGL is currently trading at $195.30, near its 52-week high, with a neutral news sentiment..."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: MCP for FinCEN -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/bank-transfer.svg" alt="FinCEN Icon" class="slide-icon">
+            <h2>MCP for FinCEN</h2>
+            <div class="process-container">
+                <div class="process-step">
+                    <h4>1. A `FinCEN_Risk_Assessor` Tool is Defined</h4>
+                    <p>An expert creates a tool that takes a <code>person_of_interest</code>, queries multiple internal and external databases, and returns a risk profile. For <strong>Ivan Petrov</strong>, it returns:
+                    <code>{"name": "Ivan Petrov", "sar_filings": 3, "high_risk_transactions": 12, "known_associates_on_watchlist": 2}</code></p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>2. A New Person is Queried</h4>
+                    <p>A user now asks: "What's the risk profile for <strong>Maria Petrova</strong>?" The LLM invokes the same <code>FinCEN_Risk_Assessor</code> tool with the new name.</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>3. Dynamic Context for a New Person</h4>
+                    <p>The tool runs again, fetching <strong>Maria Petrova's</strong> data and producing a new context:
+                    <code>{"name": "Maria Petrova", "sar_filings": 0, "high_risk_transactions": 0, "known_associates_on_watchlist": 0}</code>
+                    <p><strong>Resulting Answer:</strong> "Maria Petrova currently presents a low risk profile, with no SAR filings or high-risk transactions detected."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: MCP for NIAID -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/virus-outline.svg" alt="Virus Icon" class="slide-icon">
+            <h2>MCP for NIAID</h2>
+            <div class="process-container">
+                <div class="process-step">
+                    <h4>1. A `Virus_Research_Assistant` Tool is Defined</h4>
+                    <p>An expert creates a tool that takes a <code>virus_name</code>, queries GenBank, PubMed, and internal trial databases. For <strong>Influenza A</strong>, it returns:
+                    <code>{"virus": "Influenza A", "subtype": "H3N2", "recent_publications": 112, "new_sequences_genbank": 34, "clinical_trials_active": 5}</code></p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>2. A New Virus is Queried</h4>
+                    <p>A researcher now asks: "What are the latest developments for <strong>Zika Virus</strong>?" The LLM invokes the same <code>Virus_Research_Assistant</code> tool with the new name.</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>3. Dynamic Context for a New Virus</h4>
+                    <p>The tool runs again, fetching <strong>Zika Virus's</strong> data and producing a new context:
+                    <code>{"virus": "Zika Virus", "recent_publications": 48, "new_sequences_genbank": 12, "clinical_trials_active": 2}</code>
+                    <p><strong>Resulting Answer:</strong> "For Zika Virus, there are 48 recent publications, 12 new sequences in GenBank, and 2 active clinical trials..."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 16: MCP for Grant Management -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/cash-multiple.svg" alt="Grant Icon" class="slide-icon">
+            <h2>MCP for Grant Management</h2>
+            <div class="process-container">
+                <div class="process-step">
+                    <h4>1. A `Grant_Tracker` Tool is Defined</h4>
+                    <p>An expert creates a tool that takes a <code>grant_id</code> and returns its full status from the grants management system. For <strong>R01AI123456</strong>, it returns:
+                    <code>{"grant_id": "R01AI123456", "status": "Active", "pi": "Dr. E. Vance", "funding": "$2.5M"}</code></p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>2. A New Grant is Queried</h4>
+                    <p>A user now asks: "What's the status of grant <strong>R01DE098765</strong>?" The LLM invokes the same <code>Grant_Tracker</code> tool with the new ID.</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>3. Dynamic Context for a New Grant</h4>
+                    <p>The tool runs again, fetching the new grant's data and producing a new context:
+                    <code>{"grant_id": "R01DE098765", "status": "Pending Renewal", "pi": "Dr. A. Chen", "funding": "$1.8M"}</code>
+                    <p><strong>Resulting Answer:</strong> "Grant R01DE098765 is currently Pending Renewal. The PI is Dr. A. Chen and the funding amount is $1.8M."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 17: MCP for the Defense Health Agency -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/hospital-building.svg" alt="DHA Icon" class="slide-icon">
+            <h2>MCP for the Defense Health Agency</h2>
+            <div class="process-container">
+                <div class="process-step">
+                    <h4>1. A `Medical_Readiness_Checker` Tool is Defined</h4>
+                    <p>An expert creates a tool that takes a <code>service_member_id</code> and returns their readiness status. For <strong>A123456789</strong>, it returns:
+                    <code>{"id": "A123456789", "medical": "Ready", "dental": "Pending", "vaccinations": "Current"}</code></p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>2. A New Service Member is Queried</h4>
+                    <p>A commander asks: "What is the readiness of <strong>B987654321</strong>?" The LLM invokes the same <code>Medical_Readiness_Checker</code> tool with the new ID.</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>3. Dynamic Context for a New Service Member</h4>
+                    <p>The tool runs again, fetching the new service member's data and producing a new context:
+                    <code>{"id": "B987654321", "medical": "Ready", "dental": "Ready", "vaccinations": "Overdue"}</code>
+                    <p><strong>Resulting Answer:</strong> "Service member B987654321 is NOT deployment ready. Vaccinations are Overdue."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 18: MCP for the DHA CIO Shop -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/server-network.svg" alt="CIO Icon" class="slide-icon">
+            <h2>MCP for the DHA CIO Shop</h2>
+            <div class="process-container">
+                <div class="process-step">
+                    <h4>1. An `IT_System_Status` Tool is Defined</h4>
+                    <p>An expert creates a tool that takes an <code>application_name</code> and returns its live status from monitoring systems. For <strong>Genesis</strong>, it returns:
+                    <code>{"app_name": "Genesis", "status": "Degraded Performance", "active_alerts": 3, "on_call_engineer": "David Chen"}</code></p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>2. A New System is Queried</h4>
+                    <p>An operator asks: "What is the status of the <strong>AHLTA</strong> system?" The LLM invokes the same <code>IT_System_Status</code> tool with the new name.</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>3. Dynamic Context for a New System</h4>
+                    <p>The tool runs again, fetching the new system's data and producing a new context:
+                    <code>{"app_name": "AHLTA", "status": "Offline", "active_alerts": 12, "on_call_engineer": "Maria Garcia"}</code>
+                    <p><strong>Resulting Answer:</strong> "The AHLTA system is currently Offline with 12 active alerts. The on-call engineer is Maria Garcia."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 19: MCP for the U.S. Navy -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/ship-wheel.svg" alt="Navy Icon" class="slide-icon">
+            <h2>MCP for the U.S. Navy</h2>
+            <div class="process-container">
+                <div class="process-step">
+                    <h4>1. A `Vessel_Readiness_Reporter` Tool is Defined</h4>
+                    <p>An expert creates a tool that takes a <code>vessel_name</code> and returns its operational status. For the <strong>USS Nimitz</strong>, it returns:
+                    <code>{"vessel": "USS Nimitz", "status": "Ready", "fuel_level": "85%", "crew_readiness": "98%"}</code></p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>2. A New Vessel is Queried</h4>
+                    <p>A commander asks: "What is the readiness of the <strong>USS Gerald R. Ford</strong>?" The LLM invokes the same <code>Vessel_Readiness_Reporter</code> tool with the new name.</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>3. Dynamic Context for a New Vessel</h4>
+                    <p>The tool runs again, fetching the new vessel's data and producing a new context:
+                    <code>{"vessel": "USS Gerald R. Ford", "status": "Limited Operations", "fuel_level": "60%", "crew_readiness": "100%"}</code>
+                    <p><strong>Resulting Answer:</strong> "The USS Gerald R. Ford is in a state of Limited Operations, with a fuel level of 60% and a crew readiness of 100%."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 20: MCP for Medical Coding & Billing -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/file-document-edit-outline.svg" alt="Coding Icon" class="slide-icon">
+            <h2>MCP for Medical Coding & Billing</h2>
+            <div class="process-container">
+                <div class="process-step">
+                    <h4>1. A `Billing_Code_Assistant` Tool is Defined</h4>
+                    <p>An expert creates a tool that takes a <code>procedure_description</code> and returns a precise billing code. For a <strong>"Standard knee replacement"</strong>, it returns:
+                    <code>{"procedure": "Total knee arthroplasty, standard", "code": "27447"}</code></p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>2. A More Complex Procedure is Queried</h4>
+                    <p>A coder asks: "What is the code for a <strong>complex revision of a knee replacement</strong>?" The LLM invokes the same <code>Billing_Code_Assistant</code> tool with the new description.</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>3. Dynamic Context for a New Procedure</h4>
+                    <p>The tool runs again, fetching the new procedure's data and producing a new context:
+                    <code>{"procedure": "Total knee arthroplasty, revision, complex", "code": "27487"}</code>
+                    <p><strong>Resulting Answer:</strong> "The correct billing code for a complex revision of a total knee arthroplasty is 27487."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 21: MCP for Case Management -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/briefcase-check-outline.svg" alt="Case Management Icon" class="slide-icon">
+            <h2>MCP for Case Management</h2>
+            <div class="process-container">
+                <div class="process-step">
+                    <h4>1. A `Case_Management_System` Tool is Defined</h4>
+                    <p>An expert creates a tool that takes a <code>case_id</code> and returns its current status. For <strong>CM-98765</strong>, it returns:
+                    <code>{"case_id": "CM-98765", "status": "Pending Client Signature", "assigned_worker": "John Smith"}</code></p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>2. A New Case is Queried</h4>
+                    <p>A manager asks: "What is the status of case <strong>CM-12345</strong>?" The LLM invokes the same <code>Case_Management_System</code> tool with the new ID.</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>3. Dynamic Context for a New Case</h4>
+                    <p>The tool runs again, fetching the new case's data and producing a new context:
+                    <code>{"case_id": "CM-12345", "status": "Needs Supervisor Review", "assigned_worker": "Jane Doe"}</code>
+                    <p><strong>Resulting Answer:</strong> "Case CM-12345 is currently awaiting supervisor review. The assigned worker is Jane Doe."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 22: MCP for E-EFMP -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/shield-account-outline.svg" alt="EFMP Icon" class="slide-icon">
+            <h2>MCP for E-EFMP</h2>
+            <div class="process-container">
+                <div class="process-step">
+                    <h4>1. An `EFMP_Readiness_Assessor` Tool is Defined</h4>
+                    <p>An expert creates a tool that takes a <code>family_id</code> and a <code>duty_station</code> and returns a detailed readiness assessment. For the <strong>Miller Family</strong> and <strong>Fort Greely</strong>, it returns:
+                    <code>{"station": "Fort Greely", "support_available": false, "reason": "No developmental pediatrician within 200 miles; 12-month waitlist for ABA services."}</code></p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>2. A New Assignment is Assessed</h4>
+                    <p>The personnel officer then asks: "Assess readiness for the Miller family at <strong>Fort Carson</strong>." The LLM invokes the same <code>EFMP_Readiness_Assessor</code> tool with the new duty station.</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>3. Dynamic Context for a New Assignment</h4>
+                    <p>The tool runs again, fetching the new duty station's data and producing a new context:
+                    <code>{"station": "Fort Carson", "support_available": true, "reason": "Immediate availability for all required services."}</code>
+                    <p><strong>Resulting Answer:</strong> "Fort Carson can fully support the Miller family's needs. All required medical and educational services are immediately available."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 20: MCP for CMS -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/domain.svg" alt="CMS Icon" class="slide-icon">
+            <h2>MCP for CMS</h2>
+            <div class="process-container">
+                <div class="process-step">
+                    <h4>1. A `CMS_Eligibility_Checker` Tool is Defined</h4>
+                    <p>An expert creates a tool that takes a <code>citizen_id</code> and returns their eligibility profile. For <strong>123-45-6789</strong>, it returns:
+                    <code>{"id": "123-45-6789", "age": 68, "income_level": "Low", "existing_coverage": "Part A"}</code></p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>2. A New Citizen is Queried</h4>
+                    <p>A case worker asks: "Is citizen <strong>987-65-4321</strong> eligible for the new program?" The LLM invokes the same <code>CMS_Eligibility_Checker</code> tool with the new ID.</p>
+                </div>
+                <div class="process-arrow">▼</div>
+                <div class="process-step">
+                    <h4>3. Dynamic Context for a New Citizen</h4>
+                    <p>The tool runs again, fetching the new citizen's data and producing a new context:
+                    <code>{"id": "987-65-4321", "age": 72, "income_level": "High", "existing_coverage": "None"}</code>
+                    <p><strong>Resulting Answer:</strong> "This person is NOT eligible for the new program, as their income level is too high."</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 21: Why MCP Matters -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/lan-connect.svg" alt="Protocol Icon" class="slide-icon">
+            <h2>Why MCP Matters</h2>
+            <ul>
+                <li><strong>Accuracy:</strong> Move from guessing to data-driven answers. By providing rich, dynamic context, MCP ensures that the LLM has the information it needs to provide accurate, reliable responses.</li>
+                <li><strong>Security:</strong> Provide a secure way to access sensitive data. MCP allows you to expose data as a service, without ever exposing the underlying database or application.</li>
+                <li><strong>Scalability:</strong> Enable a reusable ecosystem of data products. Once a tool is created, it can be used by any LLM, in any application, creating a scalable and efficient data infrastructure.</li>
+            </ul>
+            <p style="margin-top: 25px; font-weight: bold; font-size: 1.8em; color: #1E3A8A;">Thank You</p>
+        </div>
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/rocket-launch-outline.svg" alt="Demo Icon" class="slide-icon">
+            <h2>Demonstration</h2>
+            <p style="font-size: 2.5em; font-family: 'Poppins', sans-serif; color: #1E3A8A;">GovConnect.AI</p>
+        </div>
+    </div>
+
+    <button id="prev-btn" class="nav-button">❮</button>
+    <button id="next-btn" class="nav-button">❯</button>
+    <div id="slide-counter" class="slide-counter"></div>
+
+    <button id="toc-btn">☰</button>
+    <div id="menu-overlay"></div>
+    <div id="toc-menu">
+        <span id="toc-close-btn">&times;</span>
+        <h3>Table of Contents</h3>
+        <ul id="toc-list"></ul>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const slideCounter = document.getElementById('slide-counter');
+        const tocBtn = document.getElementById('toc-btn');
+        const tocMenu = document.getElementById('toc-menu');
+        const tocList = document.getElementById('toc-list');
+        const tocCloseBtn = document.getElementById('toc-close-btn');
+        const menuOverlay = document.getElementById('menu-overlay');
+        let currentSlide = 0;
+
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'previous');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index < currentSlide) {
+                    slide.classList.add('previous');
+                }
+            });
+            slideCounter.textContent = `${currentSlide + 1} / ${slides.length}`;
+        }
+
+        function showNextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlides();
+            }
+        }
+
+        function showPrevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlides();
+            }
+        }
+
+        function populateToc() {
+            tocList.innerHTML = ''; // Clear existing items
+            slides.forEach((slide, index) => {
+                const title = slide.querySelector('h2')?.textContent || slide.querySelector('h1')?.textContent || `Slide ${index + 1}`;
+                const listItem = document.createElement('li');
+                listItem.textContent = title;
+                listItem.addEventListener('click', () => {
+                    currentSlide = index;
+                    updateSlides();
+                    toggleToc();
+                });
+                tocList.appendChild(listItem);
+            });
+        }
+
+        function toggleToc() {
+            tocMenu.classList.toggle('visible');
+            menuOverlay.classList.toggle('visible');
+        }
+
+        nextBtn.addEventListener('click', showNextSlide);
+        prevBtn.addEventListener('click', showPrevSlide);
+        tocBtn.addEventListener('click', toggleToc);
+        tocCloseBtn.addEventListener('click', toggleToc);
+        menuOverlay.addEventListener('click', toggleToc);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                showNextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                showPrevSlide();
+            } else if (e.key.toLowerCase() === 't') {
+                toggleToc();
+            } else if (e.key === 'Escape' && tocMenu.classList.contains('visible')) {
+                toggleToc();
+            }
+        });
+
+        // Initialize
+        updateSlides();
+        populateToc();
+    </script>
+
+</body>
+</html>
