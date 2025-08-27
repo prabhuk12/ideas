@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The End of the Swivel Chair: A New Workflow Paradigm</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Lato:wght@400;700&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Lato', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: #444;
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            perspective: 1200px;
+        }
+
+        .slide {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            top: 10%;
+            left: 10%;
+            background: #fdfdfd;
+            border-radius: 25px;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 40px 50px;
+            text-align: center;
+            transition: transform 0.7s cubic-bezier(0.38, 0.01, 0.33, 1), opacity 0.7s ease-in-out;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            opacity: 0;
+            transform: translateX(100%) rotateY(-90deg);
+            overflow-y: auto;
+        }
+
+        .slide.active { opacity: 1; transform: translateX(0) rotateY(0); }
+        .slide.previous { opacity: 0; transform: translateX(-100%) rotateY(90deg); }
+
+        .slide h1, .slide h2 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #1E3A8A; }
+        .slide h1 { font-size: 3.8em; margin-bottom: 15px; }
+        .slide h2 { font-size: 2.8em; margin-bottom: 35px; }
+        .slide p, .slide li { font-size: 1.3em; line-height: 1.75; max-width: 850px; color: #555; }
+        .slide ul { list-style-type: none; padding: 0; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .slide li { margin-bottom: 25px; display: flex; align-items: flex-start; text-align: left; max-width: 800px; }
+        .slide li::before { content: '\27A4'; color: #2563EB; font-size: 1.5em; line-height: 1.5; margin-right: 20px; margin-top: 5px; }
+        .slide-icon { height: 100px; width: 100px; margin-bottom: 25px; filter: invert(18%) sepia(58%) saturate(3456%) hue-rotate(211deg) brightness(91%) contrast(93%); }
+
+        /* Navigation */
+        .nav-button { position: fixed; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.5); font-size: 24px; cursor: pointer; border-radius: 50%; z-index: 1000; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .nav-button:hover { background-color: rgba(255, 255, 255, 0.4); transform: translateY(-50%) scale(1.1); }
+        #prev-btn { left: 30px; }
+        #next-btn { right: 30px; }
+        .slide-counter { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.5); color: white; padding: 8px 20px; border-radius: 20px; font-size: 1em; z-index: 1000; font-family: 'Poppins', sans-serif; }
+
+        /* Side Menu */
+        #toc-btn { position: fixed; top: 20px; left: 20px; width: 50px; height: 50px; background-color: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.5); font-size: 24px; cursor: pointer; border-radius: 50%; z-index: 1001; transition: all 0.3s ease; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        #toc-btn:hover { background-color: rgba(255, 255, 255, 0.4); transform: scale(1.1); }
+        #menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 2000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        #menu-overlay.visible { opacity: 1; visibility: visible; }
+        #toc-menu { position: fixed; top: 0; left: 0; width: 350px; height: 100%; background: #1f2937; z-index: 2001; display: flex; flex-direction: column; padding: 25px; transform: translateX(-100%); transition: transform 0.3s ease-in-out; box-shadow: 5px 0px 15px rgba(0,0,0,0.2); }
+        #toc-menu.visible { transform: translateX(0); }
+        #toc-close-btn { position: absolute; top: 15px; right: 25px; font-size: 2.5em; color: #9ca3af; cursor: pointer; transition: color 0.2s ease; line-height: 1; }
+        #toc-close-btn:hover { color: white; }
+        #toc-menu h3 { font-family: 'Poppins', sans-serif; color: white; font-size: 1.8em; margin-top: 40px; margin-bottom: 20px; border-bottom: 1px solid #4b5563; padding-bottom: 10px; }
+        #toc-menu ul { list-style: none; padding: 0; margin: 0; overflow-y: auto; text-align: left; }
+        #toc-menu li { font-family: 'Lato', sans-serif; color: #d1d5db; font-size: 1.2em; padding: 12px 15px; cursor: pointer; transition: all 0.2s ease; border-radius: 8px; margin-bottom: 5px; }
+        #toc-menu li:hover { background: #374151; color: white; }
+
+        /* Styles for Caseworker Workflow Slides */
+        .source-container {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            width: 100%;
+            gap: 25px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .source-box {
+            background: #f4f7fc;
+            border-radius: 15px;
+            padding: 20px;
+            width: 22%;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-top: 4px solid #667eea;
+        }
+        .source-box h4 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2em;
+            color: #1E3A8A;
+            margin: 0 0 10px 0;
+        }
+        .source-box p {
+            font-size: 1em;
+            margin: 0;
+            color: #555;
+        }
+        .workflow-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            width: 100%;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .workflow-box {
+            background: #f9fafb;
+            border-radius: 15px;
+            padding: 25px;
+            width: 45%;
+            text-align: left;
+            border: 1px solid #e5e7eb;
+        }
+        .workflow-box h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.4em;
+            color: #1E3A8A;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .workflow-box ul {
+            padding-left: 20px;
+        }
+        .workflow-box li {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            color: #374151;
+            list-style-type: decimal;
+        }
+        .workflow-box li::before { content: ""; margin: 0; font-size: 1em; }
+
+        .unified-answer-box {
+            background: #eef2ff;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            padding: 25px;
+            width: 90%;
+            text-align: left;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+            margin-top: 20px;
+        }
+        .unified-answer-box p {
+            font-size: 1.2em;
+            color: #333;
+            margin: 0;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <img src="https://api.iconify.design/mdi/account-switch-outline.svg" alt="Workflow Icon" class="slide-icon">
+            <h1>The End of the Swivel Chair</h1>
+            <p style="font-size: 1.5em; color: #555;">A new paradigm for caseworker efficiency and focus.</p>
+        </div>
+
+        <!-- Slide 2: The Caseworker's Daily Struggle -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/sync-alert.svg" alt="Frustration Icon" class="slide-icon">
+            <h2>The Caseworker's Daily Struggle</h2>
+            <p>Today, caseworkers are forced to be human APIs, manually pulling data from a dozen different systems to do their job.</p>
+            <div class="source-container">
+                <div class="source-box"><h4>Legacy Mainframe</h4><p>Payment History</p></div>
+                <div class="source-box"><h4>Modern Database</h4><p>Case Notes</p></div>
+                <div class="source-box"><h4>New Web App</h4><p>Program Applications</p></div>
+                <div class="source-box"><h4>External SaaS App</h4><p>State Benefits Portal</p></div>
+            </div>
+        </div>
+
+        <!-- Slide 3: The Vision: A Single Pane of Glass -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/lan-connect.svg" alt="Unified Icon" class="slide-icon">
+            <h2>The Vision: A Single Pane of Glass</h2>
+            <p>MCP provides a single, unified layer that connects to all underlying systems, allowing caseworkers to interact with them through a single, conversational interface.</p>
+            <!-- Add a visual representation of the unified system -->
+        </div>
+
+        <!-- Slide 4: How MCP Tames the Chaos -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/bridge.svg" alt="Bridge Icon" class="slide-icon">
+            <h2>How MCP Tames the Chaos: The Data Product Bridge</h2>
+            <p>MCP uses specific, pre-built "Data Product" tools to securely communicate with each disparate system in its native language.</p>
+            <ul>
+                <li>A <code>Get_Payment_History</code> tool that screen-scrapes the mainframe.</li>
+                <li>A <code>Retrieve_Case_Notes</code> tool that runs a secure SQL query.</li>
+                <li>A <code>Check_Benefit_Applications</code> tool that calls the modern web app's API.</li>
+            </ul>
+        </div>
+
+        <!-- Slide 5: The Before vs. After Workflow -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/compare-horizontal.svg" alt="Compare Icon" class="slide-icon">
+            <h2>Before vs. After MCP</h2>
+            <div class="workflow-container">
+                <div class="workflow-box">
+                    <h3>Before MCP</h3>
+                    <ul>
+                        <li>Log into mainframe.</li>
+                        <li>Query payment history.</li>
+                        <li>Log into web app.</li>
+                        <li>Search for applications.</li>
+                        <li>...and so on, for every system.</li>
+                    </ul>
+                </div>
+                <div class="workflow-box">
+                    <h3>After MCP</h3>
+                    <ul>
+                        <li>Ask the AI Assistant: "Give me a full summary for Jane Doe, ID 12345."</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: The Result: A Unified, Actionable Answer -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/check-decagram-outline.svg" alt="Result Icon" class="slide-icon">
+            <h2>The Result: A Unified, Actionable Answer</h2>
+            <p>The AI Assistant, powered by MCP, returns a single, synthesized paragraph that combines information from all underlying systems:</p>
+            <div class="unified-answer-box">
+                <p>"Jane Doe (ID 12345) has an active application for the new housing program. Her payment history from the mainframe shows she is current on all payments. Case notes indicate she requires special assistance, and the state benefits portal confirms she is receiving SNAP benefits."</p>
+            </div>
+        </div>
+
+        <!-- Slide 7: The Tangible Benefits -->
+        <div class="slide">
+            <img src="https://api.iconify.design/mdi/finance.svg" alt="Benefits Icon" class="slide-icon">
+            <h2>The Tangible Benefits</h2>
+            <ul>
+                <li><strong>Increased Efficiency:</strong> Drastically reduced time-per-case.</li>
+                <li><strong>Reduced Errors:</strong> Eliminates manual data entry mistakes.</li>
+                <li><strong>Improved Morale:</strong> Frees caseworkers from frustrating, repetitive tasks.</li>
+                <li><strong>Enhanced Security:</strong> Provides secure, auditable access to sensitive systems.</li>
+            </ul>
+        </div>
+    </div>
+
+    <button id="prev-btn" class="nav-button">❮</button>
+    <button id="next-btn" class="nav-button">❯</button>
+    <div id="slide-counter" class="slide-counter"></div>
+
+    <button id="toc-btn">☰</button>
+    <div id="menu-overlay"></div>
+    <div id="toc-menu">
+        <span id="toc-close-btn">&times;</span>
+        <h3>Table of Contents</h3>
+        <ul id="toc-list"></ul>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const slideCounter = document.getElementById('slide-counter');
+        const tocBtn = document.getElementById('toc-btn');
+        const tocMenu = document.getElementById('toc-menu');
+        const tocList = document.getElementById('toc-list');
+        const tocCloseBtn = document.getElementById('toc-close-btn');
+        const menuOverlay = document.getElementById('menu-overlay');
+        let currentSlide = 0;
+
+        function updateSlides() {
+            const slides = document.querySelectorAll('.slide'); // Re-query slides in case they are added dynamically
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'previous');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else if (index < currentSlide) {
+                    slide.classList.add('previous');
+                }
+            });
+            slideCounter.textContent = slides.length > 0 ? `${currentSlide + 1} / ${slides.length}` : '';
+        }
+
+        function showNextSlide() {
+            const slides = document.querySelectorAll('.slide');
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlides();
+            }
+        }
+
+        function showPrevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlides();
+            }
+        }
+
+        function populateToc() {
+            const slides = document.querySelectorAll('.slide');
+            tocList.innerHTML = '';
+            slides.forEach((slide, index) => {
+                const title = slide.querySelector('h2')?.textContent || slide.querySelector('h1')?.textContent || `Slide ${index + 1}`;
+                const listItem = document.createElement('li');
+                listItem.textContent = title;
+                listItem.addEventListener('click', () => {
+                    currentSlide = index;
+                    updateSlides();
+                    toggleToc();
+                });
+                tocList.appendChild(listItem);
+            });
+        }
+
+        function toggleToc() {
+            tocMenu.classList.toggle('visible');
+            menuOverlay.classList.toggle('visible');
+        }
+
+        function init() {
+            updateSlides();
+            populateToc();
+            nextBtn.addEventListener('click', showNextSlide);
+            prevBtn.addEventListener('click', showPrevSlide);
+            tocBtn.addEventListener('click', toggleToc);
+            tocCloseBtn.addEventListener('click', toggleToc);
+            menuOverlay.addEventListener('click', toggleToc);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight') showNextSlide();
+                else if (e.key === 'ArrowLeft') showPrevSlide();
+                else if (e.key.toLowerCase() === 't') toggleToc();
+                else if (e.key === 'Escape' && tocMenu.classList.contains('visible')) toggleToc();
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>
