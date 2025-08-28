@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Alignment Presentation</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            overflow: hidden;
+        }
+        #prezi-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        .step {
+            position: absolute;
+            width: 80vw;
+            height: 80vh;
+            top: 10vh;
+            left: 10vw;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+            box-sizing: border-box;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            visibility: hidden;
+            color: #333;
+            background-size: cover;
+            background-position: center;
+        }
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            z-index: -1;
+        }
+        .step.active {
+            opacity: 1;
+            transform: scale(1);
+            visibility: visible;
+            z-index: 1;
+        }
+        .step h1 {
+            font-size: 4em;
+            font-weight: 700;
+            margin-top: 0;
+            color: #111;
+        }
+        .step h2 {
+            font-size: 2.8em;
+            font-weight: 600;
+            margin-bottom: 30px;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+            padding-bottom: 15px;
+            color: #222;
+        }
+        .step ul {
+            list-style: none;
+            padding: 0;
+            font-size: 1.4em;
+            text-align: left;
+            max-width: 85%;
+            font-weight: 400;
+        }
+        .step li {
+            margin-bottom: 25px;
+            line-height: 1.6;
+            padding-left: 35px;
+            position: relative;
+        }
+        .step li::before {
+            content: '›';
+            position: absolute;
+            left: 0;
+            color: #007aff;
+            font-weight: 600;
+            font-size: 1.5em;
+            top: -5px;
+        }
+        #nav-buttons {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+        }
+        #nav-buttons button {
+            padding: 12px 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 30px;
+            border: none;
+            background-color: #fff;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-left: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        #nav-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        .content-wrapper {
+            text-align: center;
+        }
+         .q-mark {
+            font-size: 12em;
+            font-weight: 700;
+            color: rgba(0,0,0,0.08);
+        }
+        .quadrant-container {
+            display: flex;
+            flex-wrap: wrap;
+            width: 100%;
+            justify-content: space-around;
+        }
+        .quadrant {
+            width: 45%;
+            padding: 15px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .quadrant h3 {
+            font-size: 1.8em;
+            color: #111;
+        }
+        .quadrant p {
+            font-size: 1.1em;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="prezi-container">
+        <div class="step active" id="slide1" style="background-image: url('https://source.unsplash.com/random/1200x800?sig=1&abstract,network')">
+            <div class="content-wrapper">
+                <h2>Navigating the Tech Horizon</h2>
+                <ul>
+                    <li><b>Understand the Landscape:</b> Identify emerging technology "blips" and analyze their relevance.</li>
+                    <li><b>Develop Our Perspective:</b> Conduct deep dives into specific technologies to form a unified point of view.</li>
+                    <li><b>Co-create Reusable Solutions:</b> Collaborate on building software that provides value across accounts.</li>
+                    <li><b>Educate and Demonstrate:</b> Share knowledge through code, demos, prototypes, and paper read-outs.</li>
+                    <li><b>Open Forum & New Ideas:</b> Discuss other emerging topics and provide a platform for new ideas.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step" id="slide2" style="background-image: url('https://source.unsplash.com/random/1200x800?sig=2&radar,map')">
+            <div class="content-wrapper">
+                <h2>Developing Our Internal Tech Radar</h2>
+                <ul>
+                    <li><b>The Inspiration:</b> Industry leaders like ThoughtWorks use a "Tech Radar" to map the landscape.</li>
+                    <li><b>Our Goal:</b> To create an internal radar to answer two critical questions for any new tech:
+                        <ul style="margin-top: 15px;">
+                            <li style="margin-bottom: 10px;"><b>Adoption:</b> Which projects are already using this?</li>
+                            <li><b>Opportunity:</b> What new client solutions can we unlock with it?</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step" id="slide3" style="background-image: url('https://source.unsplash.com/random/1200x800?sig=3&strategy,blueprint')">
+            <div class="content-wrapper">
+                <h2>From Exploration to Exploitation</h2>
+                <ul>
+                    <li><b>Best Practices:</b> What are the established patterns for this technology?</li>
+                    <li><b>Lessons from the Trenches:</b> What are the real-world challenges and "gotchas"?</li>
+                    <li><b>Tooling & Gaps:</b> What tooling is missing in the ecosystem? Can we build it?</li>
+                    <li><b>Our USP:</b> How can we use this to create a unique, marketable offering?</li>
+                    <li><b>Evolving Thinking:</b> How does this tech challenge our current assumptions?</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step" id="slide4" style="background-image: url('https://source.unsplash.com/random/1200x800?sig=4&collaboration,gears')">
+            <div class="content-wrapper">
+                <h2>Co-Creating: From Ideas to Impact</h2>
+                <ul>
+                    <li><b>Ideation:</b> Based on our USPs, what specific tools or frameworks can we co-create?</li>
+                    <li><b>Inventory:</b> What relevant work is already being done? Avoid duplicating effort.</li>
+                    <li><b>Assembly:</b> How do we assemble the right people and processes to build and deploy?</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step" id="slide5" style="background-image: url('https://source.unsplash.com/random/1200x800?sig=5&code,clean')">
+            <div class="content-wrapper">
+                <h2>Education Through Code</h2>
+                <ul>
+                    <li><b>Substance Over Flash:</b> Prioritize clear, functional code over flashy demos.</li>
+                    <li><b>Demonstrate the Core Idea:</b> Every demo must clearly illustrate a specific principle.</li>
+                    <li><b>From Theory to Practice:</b> Translate concepts from papers into runnable code.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="step" id="slide6" style="background-image: url('https://source.unsplash.com/random/1200x800?sig=6&question,abstract')">
+            <div class="content-wrapper">
+                <h1>Questions</h1>
+                <div class="q-mark">?</div>
+            </div>
+        </div>
+
+        <div class="step" id="slide7" style="background-image: url('https://source.unsplash.com/random/1200x800?sig=7&whiteboard,planning')">
+            <div class="content-wrapper">
+                <h2>Agenda: Let's Start Tracking!</h2>
+                <div class="quadrant-container">
+                    <div class="quadrant">
+                        <h3>Tools</h3>
+                        <p>Compilers, CI/CD, Scanners</p>
+                    </div>
+                    <div class="quadrant">
+                        <h3>Frameworks</h3>
+                        <p>Web, Data, CSS</p>
+                    </div>
+                    <div class="quadrant">
+                        <h3>Platforms</h3>
+                        <p>Databases, MLOps, Serverless</p>
+                    </div>
+                    <div class="quadrant">
+                        <h3>Techniques</h3>
+                        <p>Agile, Architectural Patterns</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="step" id="slide8" style="background-image: url('https://source.unsplash.com/random/1200x800?sig=8&next,planning')">
+            <div class="content-wrapper">
+                <h2>Next Tech Alignment Agenda</h2>
+                <ul>
+                    <li><b>Focus Item:</b> Which particular item from the BLIP do we want to go after?</li>
+                    <li><b>Divide and Conquer:</b> Who wants to present on it?</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="nav-buttons">
+        <button id="prev">◄ Prev</button>
+        <button id="next">Next ►</button>
+    </div>
+
+    <script>
+        const steps = document.querySelectorAll('.step');
+        let currentStep = 0;
+
+        const prevButton = document.getElementById('prev');
+        const nextButton = document.getElementById('next');
+
+        function updateSteps() {
+            steps.forEach((step, index) => {
+                if (index === currentStep) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+        }
+
+        nextButton.addEventListener('click', () => {
+            currentStep = (currentStep + 1) % steps.length;
+            updateSteps();
+        });
+
+        prevButton.addEventListener('click', () => {
+            currentStep = (currentStep - 1 + steps.length) % steps.length;
+            updateSteps();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextButton.click();
+            } else if (e.key === 'ArrowLeft') {
+                prevButton.click();
+            }
+        });
+
+        updateSteps(); // Initial setup
+    </script>
+
+</body>
+</html>
